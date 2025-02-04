@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "280723908830",
+    "project_id": "glucocare-305c5",
+    "storage_bucket": "glucocare-305c5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:280723908830:android:c2182627dc7924d072ba4f",
+        "android_client_info": {
+          "package_name": "com.example.caregluco"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUqkagprPSgoBBa0ZZqKTBECtuLzlDFgk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
