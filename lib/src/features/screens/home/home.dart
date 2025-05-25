@@ -2,9 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gluco_care/src/utils/constants/colors.dart';
-import 'package:intl/intl.dart';
 import 'package:gluco_care/src/utils/constants/text_strings.dart';
-
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -16,13 +15,11 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Esto quita la flecha de regreso
-        backgroundColor:  isDarkTheme ? TColors.black : Theme.of(context).primaryColor,
+        automaticallyImplyLeading: false,
+        backgroundColor: isDarkTheme ? TColors.black : Theme.of(context).primaryColor,
         title: const Text(
           TTexts.appName,
-          style: TextStyle(
-            fontSize: 34.0,
-          ),
+          style: TextStyle(fontSize: 34.0),
         ),
       ),
       body: SingleChildScrollView(
@@ -30,9 +27,9 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 16),
-            _buildGlucoseModule(),
+            _buildGlucoseModule(user),
             const SizedBox(height: 16),
-            _buildActivityModule(),
+            _buildActivityModule(user),
             const SizedBox(height: 16),
             _buildInsulinModule(user),
             const SizedBox(height: 16),
@@ -43,163 +40,140 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGlucoseModule() {
-    return const Card(
-      child: Column(
-        children: [
-          ListTile(
-            title: Text('Glucosa', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            subtitle: Text('0 mg/dL Semanal'),
-          ),
-          ListTile(
-            title: Text('Última lectura'),
-            subtitle: Text('0 mg/dL'),
-          ),
-          ListTile(
-            title: Text('Hipoglucemias'),
-            subtitle: Text('0'),
-          ),
-        ],
-      ),
+  Widget _buildGlucoseModule(User? user) {
+    return _buildDataCard(
+      title: 'Glucosa',
+      stream: FirebaseFirestore.instance
+          .collection('registro_glucosa')
+          .where('uid', isEqualTo: user?.uid)
+          .orderBy('fecha', descending: true)
+          .limit(1)
+          .snapshots(),
+      builder: (doc) {
+        final value = doc['glucosa'] ?? 0;
+        final context = doc['contexto'] ?? '';
+        final date = _formatDate(doc['fecha']);
+        return Column(
+          children: [
+            ListTile(title: const Text('Última lectura'), subtitle: Text('$value mg/dL')),
+            ListTile(title: const Text('Contexto'), subtitle: Text(context)),
+            ListTile(title: const Text('Fecha'), subtitle: Text(date)),
+          ],
+        );
+      },
+      emptyMessage: 'No hay lecturas de glucosa registradas.',
     );
   }
 
-  Widget _buildActivityModule() {
-    return const Card(
-      child: Column(
-        children: [
-          ListTile(
-            title: Text('Actividad', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            subtitle: Text('Objetivo diario: 10,000 pasos'),
-          ),
-          ListTile(
-            title: Text('0 Kilómetros'),
-            subtitle: Text('0 Pasos'),
-          ),
-          ListTile(
-            title: Text('- Calorías'),
-          ),
-        ],
-      ),
+  Widget _buildActivityModule(User? user) {
+    return _buildDataCard(
+      title: 'Actividad Física',
+      stream: FirebaseFirestore.instance
+          .collection('registro_actividad')
+          .where('uid', isEqualTo: user?.uid)
+          .orderBy('fecha', descending: true)
+          .limit(1)
+          .snapshots(),
+      builder: (doc) {
+        final actividad = doc['actividad'] ?? 'Desconocida';
+        final duracion = doc['duracion'] ?? '0';
+        final calorias = doc['calorias'] ?? '0';
+        return Column(
+          children: [
+            ListTile(title: const Text('Actividad'), subtitle: Text(actividad)),
+            ListTile(title: const Text('Duración'), subtitle: Text('$duracion min')),
+            ListTile(title: const Text('Calorías estimadas'), subtitle: Text('$calorias kcal')),
+          ],
+        );
+      },
+      emptyMessage: 'No hay actividades registradas.',
     );
   }
 
   Widget _buildInsulinModule(User? user) {
-    if (user == null) {
-      return const Center(child: Text('Usuario no autenticado.'));
-    }
-
-    // Debugging output
-    print('Current user UID: ${user.uid}');
-
-    return StreamBuilder<QuerySnapshot>(
+    return _buildDataCard(
+      title: 'Insulina',
       stream: FirebaseFirestore.instance
           .collection('registro_insulina')
-          .where('uid', isEqualTo: user.uid)
+          .where('uid', isEqualTo: user?.uid)
+          .orderBy('date', descending: true)
+          .limit(1)
           .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          // Debugging output
-          print('No doses found for UID: ${user.uid}');
-          return const Center(child: Text('No hay dosis registradas.'));
-        }
-
-        final doses = snapshot.data!.docs;
-
-        // Debugging output
-        print('Doses: $doses');
-
-        return Card(
-          child: Column(
-            children: [
-              const ListTile(
-                title: Text('Registro Insulina', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-              ListTile(
-                title: const Text('Unidades de Insulina Administradas'),
-                subtitle: Text('${doses.last['dose']} unidades administradas'),
-              ),
-              ListTile(
-                title: const Text('Última dosis'),
-                subtitle: Text(_formatDate(doses.last['date'])),
-              ),
-            ],
-          ),
+      builder: (doc) {
+        final dose = doc['dose'] ?? '0';
+        final date = _formatDate(doc['date']);
+        return Column(
+          children: [
+            ListTile(title: const Text('Dosis'), subtitle: Text('$dose unidades')),
+            ListTile(title: const Text('Fecha'), subtitle: Text(date)),
+          ],
         );
       },
+      emptyMessage: 'No hay dosis registradas.',
     );
   }
 
   Widget _buildFoodLogModule(User? user) {
-    if (user == null) {
-      return const Center(child: Text('Usuario no autenticado.'));
-    }
-
-    // Debugging output
-    print('Current user UID: ${user.uid}');
-
-    return StreamBuilder<QuerySnapshot>(
+    return _buildDataCard(
+      title: 'Alimentos',
       stream: FirebaseFirestore.instance
           .collection('food_log')
-          .where('user_id', isEqualTo: user.uid)
+          .where('user_id', isEqualTo: user?.uid)
+          .orderBy('timestamp', descending: true)
+          .limit(1)
           .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          // Debugging output
-          print('No food logs found for UID: ${user.uid}');
-          return const Center(child: Text('No hay registros de alimentos.'));
-        }
-
-        final foodLogs = snapshot.data!.docs;
-
-        // Calculate total calories and carbohydrates
-        int totalCalories = 0;
-        int totalCarbs = 0;
-
-        for (var doc in foodLogs) {
-          // Convert string values to int, with error handling
-          final caloriesStr = doc['calories'] as String?;
-          final carbsStr = doc['carbs'] as String?;
-
-          // Convert strings to integers, handle possible conversion errors
-          final calories = int.tryParse(caloriesStr ?? '') ?? 0;
-          final carbs = int.tryParse(carbsStr ?? '') ?? 0;
-
-          totalCalories += calories;
-          totalCarbs += carbs;
-        }
-
-        // Debugging output
-        print('Food logs: $foodLogs');
-        print('Total calories: $totalCalories');
-        print('Total carbohydrates: $totalCarbs');
-
-        return Card(
-          child: Column(
-            children: [
-              const ListTile(
-                title: Text('Registro de Alimentos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-              ListTile(
-                title: const Text('Calorías Totales'),
-                subtitle: Text('$totalCalories kcal'),
-              ),
-              ListTile(
-                title: const Text('Carbohidratos Totales'),
-                subtitle: Text('$totalCarbs g'),
-              ),
-            ],
-          ),
+      builder: (doc) {
+        final alimento = doc['nombre'] ?? 'Desconocido';
+        final calorias = doc['calories'] ?? '0';
+        final carbs = doc['carbs'] ?? '0';
+        return Column(
+          children: [
+            ListTile(title: const Text('Último alimento'), subtitle: Text(alimento)),
+            ListTile(title: const Text('Calorías'), subtitle: Text('$calorias kcal')),
+            ListTile(title: const Text('Carbohidratos'), subtitle: Text('$carbs g')),
+          ],
         );
       },
+      emptyMessage: 'No hay alimentos registrados.',
+    );
+  }
+
+  Widget _buildDataCard({
+    required String title,
+    required Stream<QuerySnapshot> stream,
+    required Widget Function(Map<String, dynamic>) builder,
+    required String emptyMessage,
+  }) {
+    return Card(
+      child: StreamBuilder<QuerySnapshot>(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(emptyMessage),
+            );
+          }
+
+          final doc = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                title: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              builder(doc),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -208,9 +182,7 @@ class HomeScreen extends StatelessWidget {
       final parsedDate = DateFormat('yyyy-MM-dd HH:mm:ss').parse(date);
       return DateFormat('dd MMM yyyy, HH:mm').format(parsedDate);
     } catch (e) {
-      print('Error al formatear la fecha: $e');
-      return date; // Return the original date string if parsing fails
+      return date;
     }
   }
 }
- 

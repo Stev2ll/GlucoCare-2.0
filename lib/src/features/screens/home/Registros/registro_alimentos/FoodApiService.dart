@@ -36,6 +36,12 @@ class FoodItem {
     );
   }
 
+  String? get caloriesPer100g => null;
+
+  String? get carbsPer100g => null;
+
+  get glycemicIndex => null;
+
   Map<String, dynamic> toJson() => {
     'name': name,
     'carbs': carbs,

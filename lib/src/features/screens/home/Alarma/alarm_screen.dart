@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gluco_care/src/features/screens/home/Alarma/home_alarm.dart';
+import 'package:gluco_care/src/features/screens/home/Alarma/widgets/home_alarm.dart';
 import 'package:gluco_care/src/utils/theme/theme.dart';
 
 class AlarmScreen extends StatefulWidget {

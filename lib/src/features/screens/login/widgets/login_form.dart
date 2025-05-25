@@ -63,15 +63,17 @@ class _TLoginFormState extends State<TLoginForm> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: TSizes.spaceBtwSections),
-        child: Column(
-          children: [
-            // Email
-            TextFormField(
+Widget build(BuildContext context) {
+  return Form(
+    key: _formKey,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: TSizes.spaceBtwSections),
+      child: Column(
+        children: [
+          // Email
+          Semantics(
+            label: 'Campo de entrada para correo electrónico',
+            child: TextFormField(
               controller: _emailController,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Iconsax.direct_right),
@@ -85,12 +87,13 @@ class _TLoginFormState extends State<TLoginForm> {
                 return null;
               },
             ),
-            const SizedBox(
-              height: TSizes.spaceBtwInputFields,
-            ),
+          ),
+          const SizedBox(height: TSizes.spaceBtwInputFields),
 
-            // Password
-            TextFormField(
+          // Password
+          Semantics(
+            label: 'Campo de entrada para contraseña',
+            child: TextFormField(
               controller: _passwordController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Iconsax.password_check),
@@ -115,16 +118,17 @@ class _TLoginFormState extends State<TLoginForm> {
                 return null;
               },
             ),
-            const SizedBox(
-              height: TSizes.spaceBtwInputFields / 2,
-            ),
+          ),
+          const SizedBox(height: TSizes.spaceBtwInputFields / 2),
 
-            // Remember me and forget password
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Remember
-                Row(
+          // Remember me and forget password
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Remember
+              Semantics(
+                label: 'Casilla para recordar sesión iniciada',
+                child: Row(
                   children: [
                     Checkbox(
                       value: true,
@@ -133,18 +137,26 @@ class _TLoginFormState extends State<TLoginForm> {
                     const Text(TTexts.rememberMe),
                   ],
                 ),
+              ),
 
-                // Forget Password
-                TextButton(
+              // Forget Password
+              Semantics(
+                label: 'Enlace para recuperar contraseña',
+                link: true,
+                child: TextButton(
                   onPressed: () => Get.to(() => const ForgetPasswordScreen()),
                   child: const Text(TTexts.forgetPassword),
                 ),
-              ],
-            ),
-            const SizedBox(height: TSizes.spaceBtwSections),
+              ),
+            ],
+          ),
+          const SizedBox(height: TSizes.spaceBtwSections),
 
-            // Sign In Button
-            SizedBox(
+          // Sign In Button
+          Semantics(
+            label: 'Botón para iniciar sesión',
+            button: true,
+            child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _signIn,
@@ -153,21 +165,24 @@ class _TLoginFormState extends State<TLoginForm> {
                     : const Text(TTexts.signIn),
               ),
             ),
-            const SizedBox(
-              height: TSizes.spaceBtwItems,
-            ),
+          ),
+          const SizedBox(height: TSizes.spaceBtwItems),
 
-            // Create Account Button
-            SizedBox(
+          // Create Account Button
+          Semantics(
+            label: 'Botón para crear una cuenta nueva',
+            button: true,
+            child: SizedBox(
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () => Get.to(() => const SignupScreen()),
-                child: const Text(TTexts.createAccount),
+                child: const Text(TTexts.createAccount, style: TextStyle(color: Colors.white),),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

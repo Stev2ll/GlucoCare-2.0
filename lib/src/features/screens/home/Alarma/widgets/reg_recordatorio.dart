@@ -13,17 +13,26 @@ class ReminderSettingsScreen extends StatefulWidget {
 class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final User? user =
-      FirebaseAuth.instance.currentUser; // Obtén el usuario autenticado
 
-      
   Future<void> _showDetailsDialog(DocumentSnapshot reminder) async {
+    final tipo = reminder['tipo'] ?? 'Sin tipo';
+    final hora = reminder['hora'] ?? '--:--';
+    final fecha = reminder['fechaRegistro'] ?? '';
+
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(reminder['titulo'] ?? 'No Title'),
-          content: Text(reminder['descripcion'] ?? 'No Description'),
+          title: const Text('Detalles del Recordatorio'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tipo: $tipo'),
+              Text('Hora: $hora'),
+              Text('Fecha: $fecha'),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -98,9 +107,12 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                     itemCount: reminders.length,
                     itemBuilder: (context, index) {
                       final reminder = reminders[index];
+                      final tipo = reminder['tipo'] ?? 'Sin tipo';
+                      final hora = reminder['hora'] ?? '--:--';
+
                       return ListTile(
-                        title: Text(reminder['titulo'] ?? 'No Title'),
-                        subtitle: Text('${reminder['tipo'] ?? 'No Type'} - ${reminder['hora'] ?? 'No Time'}'),
+                        title: Text(tipo),
+                        subtitle: Text('Hora: $hora'),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

@@ -9,115 +9,88 @@ class MainMenuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
-        automaticallyImplyLeading: false,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(25.0),
-          child: Column(
-            children: [
-              const Text(
-                'Menú de Registros',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 50), // Espacio entre el título y la cuadrícula
-              Expanded(
-                child: GridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: 2, // Número de columnas
-                  crossAxisSpacing: 10.0,
-                  mainAxisSpacing: 10.0,
-                  children: [
-                    MenuButton(
-                      icon: Icons.bloodtype,
-                      label: 'Registrar Glucosa',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const GlucoseLogScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    MenuButton(
-                      icon: Icons.food_bank,
-                      label: 'Registrar Alimentos',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const FoodLogScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    MenuButton(
-                      icon: Icons.fitness_center,
-                      label: 'Registrar Ejercicio',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ActivityLogScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    MenuButton(
-                      icon: Icons.medication,
-                      label: 'Administrar Insulina',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const InsulinAdministrationPage(),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
+  body: Padding(
+    padding: const EdgeInsets.all(25.0),
+    child: Center(
+      child: GridView.count(
+        shrinkWrap: true,            // Ajusta el GridView al tamaño del contenido
+        physics: const NeverScrollableScrollPhysics(), // Desactiva scroll para evitar conflicto
+        crossAxisCount: 2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        children: [
+          _buildMenuButton(
+            context,
+            icon: Icons.bloodtype,
+            label: 'Registrar Glucosa',
+            semanticLabel: 'Botón para registrar glucosa',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GlucoseLogScreen())),
           ),
-        ),
+          _buildMenuButton(
+            context,
+            icon: Icons.food_bank,
+            label: 'Registrar Alimentos',
+            semanticLabel: 'Botón para registrar alimentos',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FoodLogScreen())),
+          ),
+          _buildMenuButton(
+            context,
+            icon: Icons.fitness_center,
+            label: 'Registrar Ejercicio',
+            semanticLabel: 'Botón para registrar ejercicio',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityLogScreen())),
+          ),
+          _buildMenuButton(
+            context,
+            icon: Icons.medication,
+            label: 'Administrar Insulina',
+            semanticLabel: 'Botón para administrar insulina',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InsulinAdministrationPage())),
+          ),
+        ],
       ),
-    );
+    ),
+  ),
+);
+
   }
-}
 
-class MenuButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  const MenuButton({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMenuButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String semanticLabel,
+    required VoidCallback onPressed,
+  }) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final textColor = isDarkTheme ? Colors.white : Colors.black;
 
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 40),
-      label: Text(label, textAlign: TextAlign.center),
-      style: ElevatedButton.styleFrom(
-        foregroundColor: isDarkTheme ? Colors.white : Colors.black,
-        backgroundColor: isDarkTheme ? Theme.of(context).primaryColor : Theme.of(context).primaryColor,
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-        textStyle: const TextStyle(fontSize: 18),
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 40, color: textColor),
+        label: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18, color: textColor),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(150, 60), // Tamaño mínimo táctil
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+          backgroundColor: primaryColor,
+          foregroundColor: textColor,
+          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          elevation: 2,
+          shadowColor: Colors.black45,
+        ),
       ),
     );
   }
